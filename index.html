@@ -425,6 +425,12 @@
     padding: 12px;
   }
   .trip-leg-dest{ font-size: 14px; font-weight: 800; color: var(--ink); }
+  .trip-code-label{ display:none; align-self:flex-start; margin-top:6px; padding:3px 10px; border-radius:999px; background: rgba(79,209,197,0.15); border:1px solid var(--line); color:#7fe3d6; font-size:13px; font-weight:800; letter-spacing:0.5px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .trip-picker{ display:none; margin-top:10px; padding:10px; border:1px solid var(--line); border-radius:10px; background: rgba(255,255,255,0.03); }
+  .trip-picker-title{ font-size:13px; font-weight:700; color: var(--muted, #9aa0a6); margin: 4px 0 2px; }
+  .trip-picker .trip-tag-grid{ margin-top:6px; }
+  .trip-picker .trip-tag-btn.sel{ outline: 3px solid var(--yellow); background: var(--blue); border-color: var(--blue); color:#fff; }
+  .trip-picker-cancel{ margin-top:8px; width:100%; padding:10px; border-radius:9px; border:1px solid var(--line); background:transparent; color: var(--ink); font-family:inherit; font-size:14px; cursor:pointer; }
   .trip-leg-timer{ font-size: 22px; font-weight: 800; color: var(--yellow); font-variant-numeric: tabular-nums; margin-top: 2px; }
   /* 주행 기록 시작/정지, 휴식 시작 — "주차장 도착" 버튼(.trip-exit-row button)과 같은 크기로
      세로로 쌓고, 각각 파란색/빨간색/주황색으로 항상 구분되게 칠해둔다. */
@@ -1071,11 +1077,13 @@
       <div id="tripPanel" class="trip-panel" style="display:none;">
         <div class="trip-leg-card">
           <div class="trip-leg-dest" id="tripLegDest">목적지 미입력</div>
+          <div class="trip-code-label" id="tripCodeLabel"></div>
           <div class="trip-leg-timer" id="tripLegTimer">00:00</div>
           <div class="trip-mode-row">
             <button type="button" class="trip-mode-btn trip-mode-btn-drive" id="btnTripDriveToggle">🚗 주행 기록 시작</button>
             <button type="button" class="trip-mode-btn trip-mode-btn-break" id="btnTripBreak" style="display:none;">☕ 휴식 시작</button>
           </div>
+          <div class="trip-picker" id="tripPicker"></div>
           <div class="trip-rest-timer" id="tripRestTimer" style="display:none;"></div>
           <div class="trip-tag-grid" id="tripTagGrid"></div>
           <label class="modal-field-label">메모</label>
@@ -2549,10 +2557,76 @@
     pushLogStateToCloud(log);
     renderLogPanel();
   }
+  // ---- 기록 코드 선택 (주행 DRV/DRV_H, 주차장 PRK_재질, 주차 PRK_재질_유형) ----
+  // 화면 버튼은 한글, 화면 뱃지와 엑셀 비고_2에는 영문 코드로만 표시/저장한다.
+  var FLOOR_OPTS = [ { ko: '잔디', code: 'GRASS' }, { ko: '벽돌', code: 'BRICK' }, { ko: '콘크리트', code: 'CONCRETE' }, { ko: '아스팔트', code: 'ASPHALT' } ];
+  var PARK_TYPE_OPTS = [ { ko: '직각', code: 'PERPEND' }, { ko: '평행', code: 'PARALLEL' }, { ko: '사선', code: 'DIAGNAL' }, { ko: '계단식', code: 'STAIR' } ];
+  var DRIVE_OPTS = [ { ko: '일반도로', code: 'DRV' }, { ko: '고속도로', code: 'DRV_H' } ];
+  var tripPicker = null; // null | { kind: 'drive'|'lot'|'park', floor: code|null, ptype: code|null }
+  function openTripPicker(kind){
+    if (tripPicker && tripPicker.kind === kind){ tripPicker = null; }
+    else { tripPicker = { kind: kind, floor: null, ptype: null }; }
+    var log = activeTripLog();
+    if (log) renderTripPanel(log);
+  }
+  function pickTripCode(kind, group, code){
+    if (!tripPicker || tripPicker.kind !== kind) return;
+    if (kind === 'drive'){ setTripMode('drive', code); return; }
+    if (kind === 'lot'){ setLegLotMode('lot', 'PRK_' + code); return; }
+    if (group === 'floor') tripPicker.floor = code; else tripPicker.ptype = code;
+    if (tripPicker.floor && tripPicker.ptype){
+      setLegLotMode('park', 'PRK_' + tripPicker.floor + '_' + tripPicker.ptype);
+      return;
+    }
+    var log = activeTripLog();
+    if (log) renderTripPanel(log);
+  }
+  function renderTripPicker(){
+    var el = document.getElementById('tripPicker');
+    if (!el) return;
+    if (!tripPicker){ el.style.display = 'none'; el.innerHTML = ''; return; }
+    function grid(opts, group){
+      return '<div class="trip-tag-grid">' + opts.map(function(o){
+        var sel = (group === 'floor' && tripPicker.floor === o.code) || (group === 'ptype' && tripPicker.ptype === o.code);
+        return '<button type="button" class="trip-tag-btn' + (sel ? ' sel' : '') + '" data-group="' + group + '" data-code="' + o.code + '">' + o.ko + '</button>';
+      }).join('') + '</div>';
+    }
+    var html = '';
+    if (tripPicker.kind === 'drive') html = '<div class="trip-picker-title">도로 종류를 선택하면 주행 기록이 시작돼요</div>' + grid(DRIVE_OPTS, 'drive');
+    else if (tripPicker.kind === 'lot') html = '<div class="trip-picker-title">바닥면 재질을 선택하면 주차장 기록이 시작돼요</div>' + grid(FLOOR_OPTS, 'floor');
+    else html = '<div class="trip-picker-title">바닥면 재질</div>' + grid(FLOOR_OPTS, 'floor') + '<div class="trip-picker-title">주차 유형 (둘 다 고르면 시작돼요)</div>' + grid(PARK_TYPE_OPTS, 'ptype');
+    html += '<button type="button" class="trip-picker-cancel" data-cancel="1">취소</button>';
+    el.innerHTML = html;
+    el.style.display = 'block';
+    var kind = tripPicker.kind;
+    Array.prototype.forEach.call(el.querySelectorAll('.trip-tag-btn'), function(b){
+      b.addEventListener('click', function(){ pickTripCode(kind, b.getAttribute('data-group'), b.getAttribute('data-code')); });
+    });
+    var c = el.querySelector('[data-cancel]');
+    if (c) c.addEventListener('click', function(){ tripPicker = null; var lg = activeTripLog(); if (lg) renderTripPanel(lg); });
+  }
+  // 목적지와 시간 사이에 지금 선택된 코드를 표시한다(기록 중이면 그 구간의 코드, 선택 중이면 지금까지 고른 값).
+  function currentTripCodeText(log){
+    var leg = currentLeg(log);
+    if (tripPicker && tripPicker.kind === 'park'){
+      return 'PRK_' + (tripPicker.floor || '?') + '_' + (tripPicker.ptype || '?');
+    }
+    if (leg && leg.arrived && leg.lotMode){
+      var segs = leg.lotMode === 'lot' ? leg.lotSegments : leg.parkSegments;
+      var open = (segs && segs.length) ? segs[segs.length - 1] : null;
+      return (open && open.end === null && open.code) ? open.code : '';
+    }
+    if (log.mode === 'drive' && log.driveSegments && log.driveSegments.length){
+      var d = log.driveSegments[log.driveSegments.length - 1];
+      return (d.end === null && d.code) ? d.code : '';
+    }
+    return '';
+  }
   // 주행 기록 시작(drive) / 정지(stopped) / 휴식 시작(rest) 모드 전환 — activeRoadId는 그대로 두고
   // GPS watch만 상태에 따라 껐다 켠다. 중간중간 끊었다가 다시 시작해도, 다시 켤 때 신호 간격이
   // 20초(ROAD_GAP_MS)를 넘으면 buildPathSegments가 알아서 경로를 끊어 그려준다.
-  function setTripMode(mode){
+  function setTripMode(mode, code){
+    tripPicker = null;
     var log = activeTripLog();
     if (!log || log.mode === mode) return;
     var now = Date.now();
@@ -2568,7 +2642,7 @@
     }
     // 새 모드에 맞는 구간을 열고, GPS 추적을 그 모드에 맞게 켜거나 끈다
     if (mode === 'drive'){
-      log.driveSegments.push({ start: now, end: null });
+      log.driveSegments.push({ start: now, end: null, code: code || '' });
       startRoadTracking();
     } else if (mode === 'rest'){
       log.restSegments.push({ start: now, end: null });
@@ -2629,7 +2703,8 @@
   }
   // 주차장 기록(주차장 내 로깅) / 주차 기록(주차장 내 주차 로깅) 시작·정지 — 휴식과 마찬가지로
   // 서로 배타적이며, 트립 전체의 휴식(setTripMode('rest'))과도 동시에 켜지지 않는다.
-  function setLegLotMode(mode){ // mode: null | 'lot' | 'park'
+  function setLegLotMode(mode, code){ // mode: null | 'lot' | 'park'
+    tripPicker = null;
     var log = activeTripLog();
     if (!log) return;
     var leg = currentLeg(log);
@@ -2639,8 +2714,8 @@
     if (!leg.parkSegments) leg.parkSegments = [];
     closeLegLotSegment(leg, now); // 이전에 열려 있던 구간 닫기
     if (log.mode === 'rest') setTripMode('stopped'); // 휴식 중이었다면 기록 시작과 함께 휴식 종료
-    if (mode === 'lot') leg.lotSegments.push({ start: now, end: null });
-    if (mode === 'park') leg.parkSegments.push({ start: now, end: null });
+    if (mode === 'lot') leg.lotSegments.push({ start: now, end: null, code: code || '' });
+    if (mode === 'park') leg.parkSegments.push({ start: now, end: null, code: code || '' });
     leg.lotMode = mode;
     saveLogs();
     pushLogStateToCloud(log);
@@ -2772,6 +2847,17 @@
       if (memoEl) memoEl.value = leg.memo || '';
       var noSpotEl = document.getElementById('tripNoSpot');
       if (noSpotEl) noSpotEl.checked = !!leg.noSpot;
+    }
+    // 도착 전/후로 의미 없는 선택창은 닫는다
+    if (tripPicker){
+      if ((tripPicker.kind === 'drive' && (isArrived || isDriving || isResting)) || (tripPicker.kind !== 'drive' && (!isArrived || leg.lotMode || isResting))) tripPicker = null;
+    }
+    renderTripPicker();
+    var codeEl = document.getElementById('tripCodeLabel');
+    if (codeEl){
+      var ct = currentTripCodeText(log);
+      codeEl.textContent = ct;
+      codeEl.style.display = ct ? 'inline-block' : 'none';
     }
     updateTripLegTimer(log);
     updateTripRestTimer(log);
@@ -3522,7 +3608,7 @@
     if (/[",\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
     return s;
   }
-  var REPORT_HEADER = ['No','시나리오','취득일','SSD','위치','고속도로','환경','취득 시작시간','취득 종료시간','취득 시간','목표 대상','비고','SPECIAL','아이','운전자'];
+  var REPORT_HEADER = ['No','시나리오','취득일','SSD','위치','고속도로','환경','취득 시작시간','취득 종료시간','취득 시간','목표 대상','비고_1','비고_2','SPECIAL','아이','운전자'];
   // 이 log(l)의 [rowStart, rowEnd] 구간 하나에 대한 리포트 한 줄을 만든다. SPECIAL/아이는
   // log.events 전체가 아니라 "이 구간 안에서 눌렀는지"만 본다 — 트립 하나가 주행 시작/정지를
   // 여러 번 오가며 여러 줄로 쪼개질 때, 각 줄이 실제로 그 시간에 눌렀는지를 정확히 반영하기 위함.
@@ -3530,7 +3616,7 @@
   // 실제 log의 type은 여전히 'road'이지만, 리포트에서는 각각 'parking_lot'/'parking' 로깅과
   // 똑같은 시나리오/비고 문구로 보여줘야 하므로 이 값으로 LOG_SCENARIO/LOG_TARGET/LOG_REMARK를
   // 찾을 type을 따로 지정할 수 있게 한다(생략하면 l.type을 그대로 씀).
-  function buildReportRow(l, rowStart, rowEnd, isRoad, env, highwayNames, locationOverride, typeOverride){
+  function buildReportRow(l, rowStart, rowEnd, isRoad, env, highwayNames, locationOverride, typeOverride, code){
     var events = l.events || [];
     var endForWindow = rowEnd || Date.now();
     var specialCount = events.filter(function(e){ return e.type === 'special' && e.time >= rowStart && e.time <= endForWindow; }).length;
@@ -3551,6 +3637,7 @@
       rowEnd ? formatDurationHM(rowEnd - rowStart) : '',
       LOG_TARGET[type] || '',
       isRoad ? '' : (LOG_REMARK[type] || ''),
+      code || '',
       specialCount > 0 ? 'o' : 'x',
       childCount > 0 ? 'o' : 'x',
       l.driver || ''
@@ -3608,7 +3695,7 @@
         // 각각 별도 줄로 낸다(뭉뚱그리지 않음) — 앱 안의 주행 상세 기록과 동일하게, 실제로 주행한
         // 시간만큼만 "취득 시간"에 반영되도록. 1분이 안 되는 짧은 구간은 아예 제외한다.
         var resolvedSegs = driveSegs.map(function(seg){
-          return { start: seg.start, end: (seg.end === null || seg.end === undefined) ? l.endTime : seg.end };
+          return { start: seg.start, code: seg.code || '', end: (seg.end === null || seg.end === undefined) ? l.endTime : seg.end };
         }).filter(function(seg){ return (seg.end - seg.start) >= SEGMENT_MIN_DURATION_MS; });
 
         if (!resolvedSegs.length){
@@ -3618,7 +3705,7 @@
           pending.push({ start: l.startTime, args: [l, l.startTime, l.endTime, isRoad, envForRoadNames(l, fallbackRoadNames), fallbackRoadNames, null, undefined] });
         } else {
           var groups = resolvedSegs.map(function(seg){
-            return { leg: legForTimestamp(l, seg.start), start: seg.start, end: seg.end };
+            return { leg: legForTimestamp(l, seg.start), start: seg.start, end: seg.end, code: seg.code };
           });
 
           groups.forEach(function(g){
@@ -3629,7 +3716,7 @@
             var toLabel = (g.leg && g.leg.destination) ? g.leg.destination : '목적지 미입력';
             var location = '이동 (' + fromLabel + ' → ' + toLabel + ')';
             var roadNames = roadNamesForWindow(l, g.start, g.end);
-            pending.push({ start: g.start, args: [l, g.start, g.end, isRoad, envForRoadNames(l, roadNames), roadNames, location, undefined] });
+            pending.push({ start: g.start, args: [l, g.start, g.end, isRoad, envForRoadNames(l, roadNames), roadNames, location, undefined, g.code || ''] });
           });
         }
       }
@@ -3640,11 +3727,11 @@
       (l.legs || []).forEach(function(leg){
         (leg.lotSegments || []).forEach(function(seg){
           var segEnd = (seg.end === null || seg.end === undefined) ? l.endTime : seg.end;
-          pending.push({ start: seg.start, args: [l, seg.start, segEnd, false, '주차장', leg.address || '', leg.destination || '', 'parking_lot'] });
+          pending.push({ start: seg.start, args: [l, seg.start, segEnd, false, '주차장', leg.address || '', leg.destination || '', 'parking_lot', seg.code || ''] });
         });
         (leg.parkSegments || []).forEach(function(seg){
           var segEnd = (seg.end === null || seg.end === undefined) ? l.endTime : seg.end;
-          pending.push({ start: seg.start, args: [l, seg.start, segEnd, false, '주차장', leg.address || '', leg.destination || '', 'parking'] });
+          pending.push({ start: seg.start, args: [l, seg.start, segEnd, false, '주차장', leg.address || '', leg.destination || '', 'parking', seg.code || ''] });
         });
       });
 
@@ -5024,7 +5111,7 @@
       var log = activeTripLog();
       if (!log) return;
       // 주행 중이면 정지로, 아니면(대기/정지됨/휴식 중) 주행 시작으로 — 버튼 하나가 스스로 토글된다.
-      setTripMode(log.mode === 'drive' ? 'stopped' : 'drive');
+      if (log.mode === 'drive') setTripMode('stopped'); else openTripPicker('drive');
     });
     document.getElementById('btnTripBreak').addEventListener('click', function(){
       var log = activeTripLog();
@@ -5042,14 +5129,14 @@
       if (!log) return;
       var leg = currentLeg(log);
       if (!leg) return;
-      setLegLotMode(leg.lotMode === 'lot' ? null : 'lot');
+      if (leg.lotMode === 'lot') setLegLotMode(null); else openTripPicker('lot');
     });
     document.getElementById('btnParkRecord').addEventListener('click', function(){
       var log = activeTripLog();
       if (!log) return;
       var leg = currentLeg(log);
       if (!leg) return;
-      setLegLotMode(leg.lotMode === 'park' ? null : 'park');
+      if (leg.lotMode === 'park') setLegLotMode(null); else openTripPicker('park');
     });
     document.getElementById('tripMemo').addEventListener('input', function(e){
       var log = activeTripLog();
