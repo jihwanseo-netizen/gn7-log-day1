@@ -431,6 +431,22 @@
   .trip-picker .trip-tag-grid{ margin-top:6px; }
   .trip-picker .trip-tag-btn.sel{ outline: 3px solid var(--yellow); background: var(--blue); border-color: var(--blue); color:#fff; }
   .trip-picker-cancel{ margin-top:8px; width:100%; padding:10px; border-radius:9px; border:1px solid var(--line); background:transparent; color: var(--ink); font-family:inherit; font-size:14px; cursor:pointer; }
+  /* 주차장에 도착한 뒤엔 특수차량/어린이/S자/기타 버튼을 숨기고, 주차장·주차 기록 → (간격) → 휴식 → 주차장에서 나옴 순서로 배열한다 */
+  .trip-leg-card.arrived{ display:flex; flex-direction:column; }
+  .trip-leg-card.arrived .trip-mode-row{ display:contents; }
+  .trip-leg-card.arrived #tripTagGrid{ display:none; }
+  .trip-leg-card.arrived #tripLegDest{ order:0; }
+  .trip-leg-card.arrived #tripCodeLabel{ order:1; }
+  .trip-leg-card.arrived #tripLegTimer{ order:2; }
+  .trip-leg-card.arrived .trip-lotpark-grid{ order:10; margin-top:12px; }
+  .trip-leg-card.arrived #tripLotRecordTimer{ order:11; }
+  .trip-leg-card.arrived #tripPicker{ order:12; }
+  .trip-leg-card.arrived #btnTripBreak{ order:20; margin-top:22px; }
+  .trip-leg-card.arrived #tripRestTimer{ order:21; }
+  .trip-leg-card.arrived #btnTripLeaveLot{ order:30; margin-top:8px; }
+  .trip-leg-card.arrived .modal-field-label{ order:40; }
+  .trip-leg-card.arrived #tripMemo{ order:41; }
+  .trip-leg-card.arrived .popup-checkline{ order:42; }
   .trip-leg-timer{ font-size: 22px; font-weight: 800; color: var(--yellow); font-variant-numeric: tabular-nums; margin-top: 2px; }
   /* 주행 기록 시작/정지, 휴식 시작 — "주차장 도착" 버튼(.trip-exit-row button)과 같은 크기로
      세로로 쌓고, 각각 파란색/빨간색/주황색으로 항상 구분되게 칠해둔다. */
@@ -2793,6 +2809,7 @@
     var isDriving = log.mode === 'drive';
     var isResting = log.mode === 'rest';
     var isArrived = !!leg.arrived;
+    if (destEl && destEl.parentNode) destEl.parentNode.classList.toggle('arrived', isArrived);
 
     // "주차장 도착"을 누르기 전(이동 중)엔 "주차장 도착/경유"로 이 leg를 끝낼지 고를 수 있고,
     // 누른 뒤(도착함)엔 그 대신 주차장 안에서의 휴식/주차장 기록/주차 기록 + "주차장에서 나옴"만 보인다.
