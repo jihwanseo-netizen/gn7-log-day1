@@ -2559,7 +2559,7 @@
   }
   // ---- 기록 코드 선택 (주행 DRV/DRV_H, 주차장 PRK_재질, 주차 PRK_재질_유형) ----
   // 화면 버튼은 한글, 화면 뱃지와 엑셀 비고_2에는 영문 코드로만 표시/저장한다.
-  var FLOOR_OPTS = [ { ko: '잔디', code: 'GRASS' }, { ko: '벽돌', code: 'BRICK' }, { ko: '콘크리트', code: 'CONCRETE' }, { ko: '아스팔트', code: 'ASPHALT' } ];
+  var FLOOR_OPTS = [ { ko: '잔디', code: 'GRASS' }, { ko: '콘크리트', code: 'CONCRETE' }, { ko: '우레탄', code: 'URETHANE' }, { ko: '아스팔트', code: 'ASPHALT' } ];
   var PARK_TYPE_OPTS = [ { ko: '직각', code: 'PERPEND' }, { ko: '평행', code: 'PARALLEL' }, { ko: '사선', code: 'DIAGNAL' }, { ko: '계단식', code: 'STAIR' } ];
   var DRIVE_OPTS = [ { ko: '일반도로', code: 'DRV' }, { ko: '고속도로', code: 'DRV_H' } ];
   var tripPicker = null; // null | { kind: 'drive'|'lot'|'park', floor: code|null, ptype: code|null }
@@ -3985,6 +3985,7 @@
     } else {
       var m = LEG_RECORD_META[r.kind];
       icon = m.icon; label = m.label;
+      if (r.data.code) label += ' (' + escapeHtml(r.data.code) + ')';
       var endMs = (r.data.end === null || r.data.end === undefined) ? null : r.data.end;
       var endText = endMs === null ? '진행 중' : formatTimeHMS(endMs);
       var durMs = (endMs === null ? Date.now() : endMs) - r.data.start;
