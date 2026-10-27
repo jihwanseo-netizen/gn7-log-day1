@@ -745,6 +745,12 @@
   /* 시간은 다음 줄(전체 너비)로 내려서 라벨이 세로로 꺾이지 않게 한다 */
   .legcard-record-time{ font-variant-numeric: tabular-nums; order: 3; flex-basis: 100%; padding-left: 24px; font-size: 12px; }
   .legcard-record-edit{ order: 2; }
+  .legcard-code-chip{ background: rgba(79,209,197,0.15); border:1px solid var(--line); color:#7fe3d6; border-radius:999px; padding:2px 9px; font-size:11.5px; font-weight:800; font-family: ui-monospace, Menlo, Consolas, monospace; cursor:pointer; margin-left:6px; }
+  .legcard-code-chip.empty{ background: transparent; color: var(--yellow); border-style:dashed; font-family:inherit; }
+  .code-edit-title{ font-size:13px; font-weight:700; margin:10px 0 4px; opacity:.8; }
+  .code-edit-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .code-edit-grid button{ padding:14px 6px; border-radius:9px; border:1px solid var(--line); background: var(--asphalt); color: var(--ink); font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; }
+  .code-edit-grid button.sel{ background: var(--blue); border-color: var(--blue); color:#fff; outline:3px solid var(--yellow); }
   .legcard-record-edit{
     background:none; border:none; color: var(--ink-dim); cursor:pointer;
     font-size: 11.5px; padding: 2px 6px; flex-shrink: 0; text-decoration: underline;
@@ -2581,6 +2587,27 @@
   var FLOOR_OPTS = [ { ko: '잔디', code: 'GRASS' }, { ko: '콘크리트', code: 'CONCRETE' }, { ko: '우레탄', code: 'URETHANE' }, { ko: '아스팔트', code: 'ASPHALT' } ];
   var PARK_TYPE_OPTS = [ { ko: '직각', code: 'PERPEND' }, { ko: '평행', code: 'PARALLEL' }, { ko: '사선', code: 'DIAGNAL' }, { ko: '계단식', code: 'STAIR' } ];
   var DRIVE_OPTS = [ { ko: '일반도로', code: 'DRV' }, { ko: '고속도로', code: 'DRV_H' } ];
+  var codeEditCtx = null;
+  function renderCodeEditModal(){
+    var c = codeEditCtx; if (!c) return;
+    var log = logs.find(function(l){ return l.id === c.logId; });
+    var arr = log && resolveRecordArray(log, c.kind, c.legId);
+    var target = arr && arr[c.refIndex];
+    if (!target) return;
+    var cur = target.code || '';
+    function grid(opts, group, selCode){
+      return '<div class="code-edit-grid">' + opts.map(function(o){
+        return '<button type="button" class="' + (o.code === selCode ? 'sel' : '') + '" onclick="AppMap.pickEditCode(\'' + group + '\',\'' + o.code + '\')">' + o.ko + '</button>';
+      }).join('') + '</div>';
+    }
+    var body;
+    if (c.kind === 'drive') body = grid(DRIVE_OPTS, 'drive', cur);
+    else if (c.kind === 'lot') body = grid(FLOOR_OPTS, 'floor', cur.replace(/^PRK_/, ''));
+    else body = '<div class="code-edit-title">바닥면 재질</div>' + grid(FLOOR_OPTS, 'floor', c.st.floor) +
+                '<div class="code-edit-title">주차 유형</div>' + grid(PARK_TYPE_OPTS, 'ptype', c.st.ptype);
+    openModal('<h3>코드 수정</h3><div class="code-edit-title">현재: ' + escapeHtml(cur || '(없음)') + '</div>' + body +
+      '<div class="popup-actions"><button class="btn-secondary" onclick="AppMap.cancelModal()">닫기</button></div>');
+  }
   var tripPicker = null; // null | { kind: 'drive'|'lot'|'park', floor: code|null, ptype: code|null }
   function openTripPicker(kind){
     if (tripPicker && tripPicker.kind === kind){ tripPicker = null; }
@@ -3723,7 +3750,7 @@
           // 전부 너무 짧은 구간뿐이었다면(드문 예외) 그래도 트립 자체가 리포트에서 통째로 빠지지
           // 않도록 전체를 한 줄로 남긴다.
           var fallbackRoadNames = roadNamesForWindow(l, l.startTime, l.endTime);
-          pending.push({ start: l.startTime, args: [l, l.startTime, l.endTime, isRoad, envForRoadNames(l, fallbackRoadNames), fallbackRoadNames, null, undefined] });
+          pending.push({ start: l.startTime, args: [l, l.startTime, l.endTime, isRoad, envForRoadNames(l, fallbackRoadNames), fallbackRoadNames, null, undefined, (driveSegs[0] && driveSegs[0].code) || ''] });
         } else {
           var groups = resolvedSegs.map(function(seg){
             return { leg: legForTimestamp(l, seg.start), start: seg.start, end: seg.end, code: seg.code };
@@ -3998,7 +4025,7 @@
     park:  { icon: '🚙', label: '주차 기록' }
   };
   function renderLegRecordRow(logId, legId, r){
-    var icon, label, timeText;
+    var icon, label, timeText, chipHtml = '';
     if (r.kind === 'event'){
       var meta = EVENT_META[r.data.type] || { icon: '•', label: r.data.type };
       icon = meta.icon; label = meta.label;
@@ -4006,7 +4033,9 @@
     } else {
       var m = LEG_RECORD_META[r.kind];
       icon = m.icon; label = m.label;
-      if (r.data.code) label += ' (' + escapeHtml(r.data.code) + ')';
+      if (r.kind === 'drive' || r.kind === 'lot' || r.kind === 'park'){
+        chipHtml = '<button type="button" class="legcard-code-chip' + (r.data.code ? '' : ' empty') + '" onclick="AppMap.openCodeEdit(\'' + logId + '\',\'' + r.kind + '\',' + r.refIndex + ',\'' + legId + '\')">' + (r.data.code ? escapeHtml(r.data.code) + ' ✎' : '코드 선택 ✎') + '</button>';
+      }
       var endMs = (r.data.end === null || r.data.end === undefined) ? null : r.data.end;
       var endText = endMs === null ? '진행 중' : formatTimeHMS(endMs);
       var durMs = (endMs === null ? Date.now() : endMs) - r.data.start;
@@ -4014,7 +4043,7 @@
     }
     return '<div class="legcard-record-row">' +
       '<span class="legcard-record-icon">' + icon + '</span>' +
-      '<span class="legcard-record-label">' + label + '</span>' +
+      '<span class="legcard-record-label">' + label + chipHtml + '</span>' +
       '<span class="legcard-record-time">' + timeText + '</span>' +
       '<button type="button" class="legcard-record-edit" onclick="AppMap.openEditRecordModal(\'' + logId + '\',\'' + r.kind + '\',' + r.refIndex + ',\'' + legId + '\')">수정</button>' +
     '</div>';
@@ -4441,6 +4470,43 @@
       pushLogStateToCloud(log);
       renderLogPanel();
       renderLogList();
+    },
+    // 로깅 기록에서 코드(DRV/DRV_H, PRK_재질, PRK_재질_유형)를 버튼 한두 번으로 바로 고친다.
+    openCodeEdit: function(logId, kind, refIndex, legId){
+      var log = logs.find(function(l){ return l.id === logId; });
+      if (!log) return;
+      var arr = resolveRecordArray(log, kind, legId);
+      var target = arr && arr[refIndex];
+      if (!target) return;
+      var parts = (target.code || '').split('_');
+      var st = { floor: null, ptype: null };
+      if (kind === 'park'){
+        if (FLOOR_OPTS.some(function(o){ return o.code === parts[1]; })) st.floor = parts[1];
+        if (PARK_TYPE_OPTS.some(function(o){ return o.code === parts[2]; })) st.ptype = parts[2];
+      }
+      codeEditCtx = { logId: logId, kind: kind, refIndex: refIndex, legId: legId, st: st };
+      renderCodeEditModal();
+    },
+    pickEditCode: function(group, code){
+      var c = codeEditCtx; if (!c) return;
+      var log = logs.find(function(l){ return l.id === c.logId; });
+      var arr = log && resolveRecordArray(log, c.kind, c.legId);
+      var target = arr && arr[c.refIndex];
+      if (!target) return;
+      var done = false;
+      if (c.kind === 'drive'){ target.code = code; done = true; }
+      else if (c.kind === 'lot'){ target.code = 'PRK_' + code; done = true; }
+      else {
+        if (group === 'floor') c.st.floor = code; else c.st.ptype = code;
+        if (c.st.floor && c.st.ptype){ target.code = 'PRK_' + c.st.floor + '_' + c.st.ptype; done = true; }
+      }
+      if (done){
+        saveLogs(); pushLogStateToCloud(log); renderLogPanel(); renderLogList();
+        if (c.kind === 'park'){ renderCodeEditModal(); return; }
+        closeModal();
+        return;
+      }
+      renderCodeEditModal();
     },
     openEditRecordModal: function(logId, kind, refIndex, legId){
       var log = logs.find(function(l){ return l.id === logId; });
