@@ -434,7 +434,10 @@
   /* 주차장에 도착한 뒤엔 특수차량/어린이/S자/기타 버튼을 숨기고, 주차장·주차 기록 → (간격) → 휴식 → 주차장에서 나옴 순서로 배열한다 */
   .trip-leg-card.arrived{ display:flex; flex-direction:column; }
   .trip-leg-card.arrived .trip-mode-row{ display:contents; }
-  .trip-leg-card.arrived #tripTagGrid{ display:none; }
+  /* 도착 후엔 주차장/주차 기록이 켜져 있는 동안에만 특수차량/어린이 버튼을 보여준다(S자/기타는 숨김) */
+  .trip-leg-card.arrived #tripTagGrid{ display:none; order:13; }
+  .trip-leg-card.arrived.lot-recording #tripTagGrid{ display:grid; }
+  .trip-leg-card.arrived .trip-tag-btn[data-tag="s_curve"], .trip-leg-card.arrived .trip-tag-btn[data-tag="etc"]{ display:none; }
   .trip-leg-card.arrived #tripLegDest{ order:0; }
   .trip-leg-card.arrived #tripCodeLabel{ order:1; }
   .trip-leg-card.arrived #tripLegTimer{ order:2; }
@@ -2810,6 +2813,7 @@
     var isResting = log.mode === 'rest';
     var isArrived = !!leg.arrived;
     if (destEl && destEl.parentNode) destEl.parentNode.classList.toggle('arrived', isArrived);
+    if (destEl && destEl.parentNode) destEl.parentNode.classList.toggle('lot-recording', isArrived && !!leg.lotMode);
 
     // "주차장 도착"을 누르기 전(이동 중)엔 "주차장 도착/경유"로 이 leg를 끝낼지 고를 수 있고,
     // 누른 뒤(도착함)엔 그 대신 주차장 안에서의 휴식/주차장 기록/주차 기록 + "주차장에서 나옴"만 보인다.
