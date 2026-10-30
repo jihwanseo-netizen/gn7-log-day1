@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8" />
 <script>
-/* RS4 주간 1 전용: 다른 조 앱과 같은 도메인(github.io)을 쓰므로 브라우저 저장소 키 앞에 'day1:'를 붙여 서로 섞이지 않게 한다. */
+/* RS4 야간1 전용: 다른 조 앱과 같은 도메인(github.io)을 쓰므로 브라우저 저장소 키 앞에 'night:'를 붙여 서로 섞이지 않게 한다. */
 (function(){
   try {
-    var P = 'day1:', S = Storage.prototype, g = S.getItem, st = S.setItem, r = S.removeItem;
+    var P = 'night:', S = Storage.prototype, g = S.getItem, st = S.setItem, r = S.removeItem;
     S.getItem = function(k){ return g.call(this, this === window.localStorage ? P + k : k); };
     S.setItem = function(k, v){ return st.call(this, this === window.localStorage ? P + k : k, v); };
     S.removeItem = function(k){ return r.call(this, this === window.localStorage ? P + k : k); };
   } catch(e){}
 })();
 </script>
-<title>RS4 주간 1</title>
+<title>RS4 야간1</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="RS4 주간 1" />
+<meta name="apple-mobile-web-app-title" content="RS4 야간1" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="theme-color" content="#1A1C1F" />
 <link rel="apple-touch-icon" href="data:image/png;base64,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" />
@@ -117,6 +117,10 @@
     font-family: inherit;
     white-space: nowrap;
   }
+  .sync-status-btn.gps-ok{ border-color:#12A594; color:#12A594; }
+  .sync-status-btn.gps-wait{ border-color:#E0A800; color:#B88700; }
+  .sync-status-btn.gps-bad{ border-color:#D64545; color:#D64545; }
+  .sync-status-btn.gps-off{ border-color:var(--line); color:var(--ink-dim); }
   .sync-status-btn.linked{ border-color: #12A594; color: #12A594; }
   .header-btns{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
   .refresh-btn{ font-size: 14px; line-height: 1; padding: 3px 9px; }
@@ -141,6 +145,22 @@
     border-bottom: 1px solid var(--line);
     flex-shrink: 0;
   }
+  #bigTimerWrap{
+    padding: 10px 20px 14px;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+    text-align: center;
+  }
+  #bigTimer{
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  /* 로깅 중에는 상단 작은 타이머 알약 대신 위의 큰 타이머가 그 역할을 한다 */
+  body.logging-active #logTimer{ display: none !important; }
   .stat-box{
     flex: 1;
     background: var(--asphalt-2);
@@ -1070,9 +1090,11 @@
     <div class="hazard-strip"></div>
     <div id="header">
       <div class="header-top-row">
-        <h1>RS4 주간 1</h1>
+        <h1>RS4 야간1</h1>
         <div class="header-btns">
+          <button id="gpsStatusBtn" class="sync-status-btn" type="button" aria-label="GPS 기록 상태">GPS</button>
           <button id="syncStatusBtn" class="sync-status-btn" type="button">팀 코드</button>
+          <button id="btnStatsToggle" class="sync-status-btn refresh-btn" type="button" title="기록된 장소 / 방문 완료 / 높이 미확인 보기" aria-label="장소 통계 보기" style="display:none;">📊</button>
           <button id="btnHeaderRefresh" class="sync-status-btn refresh-btn" type="button" title="새로고침" aria-label="새로고침" onclick="AppMap.refreshApp()">↻</button>
         </div>
       </div>
@@ -1092,6 +1114,7 @@
         <div class="stat-label">높이 미확인</div>
       </div>
     </div>
+    <div id="bigTimerWrap" style="display:none;"><div id="bigTimer">00:00</div></div>
     <div id="logPanel">
       <div class="log-status-line">
         <span class="log-status-dot" id="logStatusDot"></span>
@@ -1275,6 +1298,8 @@
   // 깜빡이는 문제가 있었다. 권한 거부를 감지하면 이 플래그를 세워 워치독의 자동 재시작을 멈추고,
   // 위치 재요청이 실제로 성공하면(권한을 다시 허용한 경우) 다시 풀어준다.
   var geoPermissionDenied = false;
+  var gpsRealFixAt = 0; // 실제로 좌표가 들어온 마지막 시각 (헤더 GPS 표시등용 — lastFixAt은 시작 시각으로도 갱신되므로 따로 둠)
+  var GPS_OK_MS = 10000; // 이 시간 안에 좌표가 들어왔으면 🟢
   var highwaySampleTimestamps = {}; // logId -> 마지막으로 구간명을 확인한 시각(로컬 전용, 클라우드로 동기화 안 됨)
   var followMode = false; // true면 실시간 위치가 갱신될 때마다 지도를 그 위치로 따라감(일반도로 로깅 중에만 동작)
   var showVisited = false; // true일 때만 '갔던 곳'(visited=true) 핀을 지도에 표시. 평소엔 숨겨서 지도가 복잡해지지 않게 함
@@ -1292,7 +1317,7 @@
     { key: 's_curve',  label: '〰 S자' },
     { key: 'etc',      label: '❓ 기타' }
   ];
-  var tripModalVehicle = 'LX2'; // 트립 시작 모달에서 고른 차종 (LX2/GN7) — 임시 선택값
+  var tripModalVehicle = 'GN7'; // 트립 시작 모달에서 고른 차종 (GN7/JW1) — 임시 선택값
   var tripPanelLegId = null;    // 트립 패널의 메모/체크박스를 leg가 바뀔 때만 다시 채우기 위한 추적용
   var wakeLock = null;          // Wake Lock — 화면이 꺼지지 않게 해서 트립 중 위치 추적이 끊기는 걸 최소화
 
@@ -1321,12 +1346,12 @@
   // 로깅 기록(logs)과 장소 체크리스트(spots) 둘 다 공유된다.
   // 팀 코드가 입력된 기기끼리만 같은 방(rooms/{teamCode}/logs, rooms/{teamCode}/spots)을 보고 쓸 수 있다.
   var FIREBASE_CONFIG = {
-    apiKey: "AIzaSyDWaq17YI4EetOCkMY8HO9tUgbUrXg0ucc",
-    authDomain: "rs4-day-1.firebaseapp.com",
-    projectId: "rs4-day-1",
-    storageBucket: "rs4-day-1.firebasestorage.app",
-    messagingSenderId: "155773597141",
-    appId: "1:155773597141:web:32401a9fbab736bef5b95c"
+    apiKey: "AIzaSyDwv28dsrqm4dDZ8XkfP5bZOUuM4UrbWZY",
+    authDomain: "rs4-v2.firebaseapp.com",
+    projectId: "rs4-v2",
+    storageBucket: "rs4-v2.firebasestorage.app",
+    messagingSenderId: "948410392006",
+    appId: "1:948410392006:web:b64e703a57e36835a8a6c7"
   };
   // 이 기기를 구분하는 값. 같은 팀 코드의 폰 여러 대가 같은 주행 로깅을 같이 추적하는데, 시작하지 않은
   // 폰(follower)이 자기 복사본 전체를 5초마다 클라우드에 올리면, 시작한 폰이 방금 바꾼 상태(정지/휴식/
@@ -1356,7 +1381,7 @@
   }
   try {
     var storedTeamCode = localStorage.getItem(TEAM_CODE_KEY) || null;
-    if (!storedTeamCode){ storedTeamCode = 'RS4DAY1'; localStorage.setItem(TEAM_CODE_KEY, storedTeamCode); localStorage.setItem(TEAM_CODE_PROMPTED_KEY, '1'); }
+    if (!storedTeamCode){ storedTeamCode = 'RS4NIGHT'; localStorage.setItem(TEAM_CODE_KEY, storedTeamCode); localStorage.setItem(TEAM_CODE_PROMPTED_KEY, '1'); }
     teamCode = storedTeamCode ? normalizeTeamCode(storedTeamCode) : null;
     // 정규화된 값으로 다시 저장해둬서, 다음부터는 항상 대문자 형태로 일관되게 남게 한다.
     if (teamCode && teamCode !== storedTeamCode) localStorage.setItem(TEAM_CODE_KEY, teamCode);
@@ -1992,7 +2017,7 @@
       '<h3>팀 코드 입력</h3>' +
       '<p>같이 다니는 폰끼리 같은 코드를 입력하면, 로깅 기록과 장소 체크리스트를 서로 실시간으로 보고 이어받을 수 있어요. 안 써도 이 기기 안에서는 그대로 사용 가능해요.<br/>대문자/소문자는 구분하지 않아요(자동으로 대문자로 저장돼요) — "RS4"와 "rs4"는 항상 같은 팀으로 합쳐져요.</p>' +
       (teamCode ? '<p class="modal-field-label">상태: ' + escapeHtml(syncStateLabel()) + '</p>' : '') +
-      '<input type="text" id="teamCodeInput" value="' + escapeHtml(teamCode || '') + '" placeholder="예: RS4DAY1" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false" />' +
+      '<input type="text" id="teamCodeInput" value="' + escapeHtml(teamCode || '') + '" placeholder="예: RS4NIGHT" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false" />' +
       '<div class="popup-actions">' +
         '<button class="btn-secondary" onclick="AppMap.skipTeamCode()">나중에</button>' +
         '<button class="btn-primary" onclick="AppMap.confirmTeamCode()">저장</button>' +
@@ -2597,7 +2622,7 @@
   }
   // ---- 기록 코드 선택 (주행 DRV/DRV_H, 주차장 PRK_재질, 주차 PRK_재질_유형) ----
   // 화면 버튼은 한글, 화면 뱃지와 엑셀 비고_2에는 영문 코드로만 표시/저장한다.
-  var FLOOR_OPTS = [ { ko: '잔디', code: 'GRASS' }, { ko: '콘크리트', code: 'CONCRETE' }, { ko: '우레탄', code: 'URETHANE' }, { ko: '아스팔트', code: 'ASPHALT' }, { ko: '벽돌', code: 'BRICK' }, { ko: '기타', code: 'ETC' } ];
+  var FLOOR_OPTS = [ { ko: '벽돌', code: 'BRICK' }, { ko: '아스팔트', code: 'ASPHALT' }, { ko: '콘크리트', code: 'CONCRETE' }, { ko: '우레탄', code: 'URETHANE' }, { ko: '잔디', code: 'GRASS' }, { ko: '기타', code: 'ETC' } ];
   var PARK_TYPE_OPTS = [ { ko: '직각', code: 'PERPEND' }, { ko: '평행', code: 'PARALLEL' }, { ko: '사선', code: 'DIAGNAL' }, { ko: '계단식', code: 'STAIR' } ];
   var DRIVE_OPTS = [ { ko: '일반도로', code: 'DRV' }, { ko: '고속도로', code: 'DRV_H' } ];
   var codeEditCtx = null;
@@ -3043,7 +3068,7 @@
     }
   });
   function openTripStartModal(){
-    tripModalVehicle = 'LX2';
+    tripModalVehicle = 'GN7';
     var lastSSD = '';
     try { lastSSD = localStorage.getItem('lastSSD') || ''; } catch(e){}
     var lastDriver = '';
@@ -3054,8 +3079,8 @@
       '<input type="number" id="modalStartKm" placeholder="예: 12345" />' +
       '<label class="modal-field-label">차종</label>' +
       '<div class="env-toggle" id="tripVehicleToggle">' +
-        '<button type="button" class="env-toggle-btn active" data-vehicle="LX2">LX2</button>' +
-        '<button type="button" class="env-toggle-btn" data-vehicle="GN7">GN7</button>' +
+        '<button type="button" class="env-toggle-btn active" data-vehicle="GN7">GN7</button>' +
+        '<button type="button" class="env-toggle-btn" data-vehicle="JW1">JW1</button>' +
       '</div>' +
       '<label class="modal-field-label">SSD 번호 (선택)</label>' +
       '<input type="text" id="modalSsdInput" value="' + escapeHtml(lastSSD) + '" placeholder="예: SSD-01" />' +
@@ -3241,6 +3266,25 @@
       }
     });
   }
+  // 헤더 GPS 표시등: 🟢 기록 중(좌표 수신 중) / 🟡 신호 대기 / 🔴 권한 꺼짐·미지원 / ⚪ 기록 안 함
+  function gpsState(){
+    if (!navigator.geolocation) return {dot:'🔴', cls:'gps-bad', label:'GPS', tip:'이 브라우저는 위치 추적을 지원하지 않아요.'};
+    if (!shouldTrackActiveRoad()) return {dot:'⚪', cls:'gps-off', label:'GPS', tip:'지금은 GPS 기록을 하고 있지 않아요. (로깅 시작 전이거나, 주행 기록이 아닌 상태)'};
+    if (geoPermissionDenied) return {dot:'🔴', cls:'gps-bad', label:'GPS', tip:'위치 권한이 꺼져 있어요. 기기 설정에서 이 앱(브라우저)의 위치 권한을 켜주세요.'};
+    if (gpsRealFixAt && Date.now() - gpsRealFixAt < GPS_OK_MS) return {dot:'🟢', cls:'gps-ok', label:'GPS', tip:'GPS로 경로를 기록하고 있어요.'};
+    return {dot:'🟡', cls:'gps-wait', label:'GPS', tip:'GPS 신호를 기다리는 중이에요. 하늘이 트인 곳에서 잠시 기다려주세요.'};
+  }
+  function updateGpsStatusButton(){
+    var btn = document.getElementById('gpsStatusBtn');
+    if (!btn) return;
+    var st = gpsState();
+    var txt = st.dot + ' GPS';
+    if (btn.textContent !== txt) btn.textContent = txt;
+    btn.className = 'sync-status-btn ' + st.cls;
+    btn.title = st.tip;
+    btn.setAttribute('data-gps', st.cls);
+  }
+  setInterval(updateGpsStatusButton, 1000);
   function setGeoStatus(msg){
     var el = document.getElementById('geoStatus');
     if (!msg){ el.style.display = 'none'; el.textContent = ''; return; }
@@ -3268,10 +3312,13 @@
     if (watchId !== null){ try { navigator.geolocation.clearWatch(watchId); } catch(e){} watchId = null; }
     setGeoStatus('위치 권한을 확인하는 중…');
     lastFixAt = Date.now();
+    gpsRealFixAt = 0;
+    updateGpsStatusButton();
     startGeoWatchdog();
     watchId = navigator.geolocation.watchPosition(function(pos){
       setGeoStatus(null);
       lastFixAt = Date.now();
+      gpsRealFixAt = lastFixAt;
       geoPermissionDenied = false; // 위치가 실제로 잡혔다는 건 권한이 (다시) 허용됐다는 뜻
       var log = logs.find(function(l){ return l.id === activeRoadId; });
       if (!log) return;
@@ -3311,6 +3358,7 @@
       // 똑같이 실패한다 — 워치독이 계속 재시작을 반복하며 상태 메시지만 깜빡이지 않도록 멈춘다.
       if (err && err.code === 1){
         geoPermissionDenied = true;
+        updateGpsStatusButton();
         setGeoStatus('위치 권한이 꺼져 있어요. 기기 설정에서 이 앱(브라우저)의 위치 권한을 켜주세요.');
         return;
       }
@@ -3323,8 +3371,10 @@
       watchId = null;
     }
     stopGeoWatchdog();
+    gpsRealFixAt = 0;
     if (liveMarker){ liveMarker.setMap(null); liveMarker = null; }
     setGeoStatus(null);
+    updateGpsStatusButton();
   }
   // iOS Safari에서는 화면을 껐다 켜거나 다른 앱에 갔다 오면 watchPosition이 콜백을 다시는
   // 호출하지 않고 조용히 죽어버리는 경우가 있다(WebKit 버그). 그러면 앱은 멀쩡히 켜져 있어도
@@ -3477,6 +3527,7 @@
       text.textContent = '로깅 대기 중';
     }
 
+    applyStatsVisibility(!!anyActive);
     if (anyActive){
       // 트립(주차 탐색) 중에도 트립 패널 안의 leg별 타이머(지금 목적지에서 얼마나 지났는지)만
       // 보여주고 이 상단 타이머는 숨겼었는데, 그러면 "로깅을 시작한 뒤로 총 얼마나 지났는지"를
@@ -3526,6 +3577,39 @@
     var end = (last.end !== null && last.end !== undefined) ? last.end : Date.now();
     return Math.max(0, end - last.start);
   }
+  // 로깅 중에는 "기록된 장소/방문 완료/높이 미확인"을 숨기고 그 자리에 큰 타이머를 보여준다.
+  // 작은 📊 버튼을 누르면 통계가 다시 나타난다(로깅이 끝나면 항상 보임).
+  var statsPeek = false;
+  function applyStatsVisibility(logging){
+    var statsEl = document.getElementById('stats');
+    var wrap = document.getElementById('bigTimerWrap');
+    var btn = document.getElementById('btnStatsToggle');
+    if (!logging) statsPeek = false;
+    document.body.classList.toggle('logging-active', !!logging);
+    if (statsEl) statsEl.style.display = (logging && !statsPeek) ? 'none' : '';
+    if (wrap) wrap.style.display = logging ? '' : 'none';
+    if (btn){
+      btn.style.display = logging ? '' : 'none';
+      btn.classList.toggle('active', !!(logging && statsPeek));
+    }
+    if (logging) syncBigTimer();
+  }
+  // 큰 타이머는 기존 타이머(#logTimer)의 값/색/깜빡임을 그대로 따라 한다.
+  function syncBigTimer(){
+    var src = document.getElementById('logTimer');
+    var big = document.getElementById('bigTimer');
+    if (!src || !big) return;
+    big.textContent = src.textContent || '00:00';
+    // 4분 제한이 걸린 기록(주차장/주차/주행 구간)이면 작은 타이머와 똑같이 붉게 변하고 깜빡인다.
+    var el = currentRestartLimitedElapsedMs();
+    if (el !== null){
+      big.style.color = restartLimitColor(el);
+      big.classList.toggle('log-timer-overdue', el >= RESTART_LIMIT_MS);
+    } else {
+      big.style.color = '';
+      big.classList.remove('log-timer-overdue');
+    }
+  }
   function updateTimerText(){
     var timer = document.getElementById('logTimer');
     var refId = activeSceneId || activeLotId || activeParkingId || activeRoadId;
@@ -3555,6 +3639,7 @@
       elapsed = Date.now() - log.startTime;
     }
     timer.textContent = formatDuration(elapsed);
+    syncBigTimer();
   }
   // 4분 안에 끊었다가 다시 시작해야 하는 "리스타트 제한" 대상의 지금 경과 시간을 하나로
   // 통일해서 계산한다 — 대상은 다음 셋 중 하나뿐이고(동시에 두 개가 활성화되는 일은 없음):
@@ -3630,6 +3715,7 @@
       urgentTimer.classList.remove('log-timer-overdue');
     }
 
+    syncBigTimer();
     if (flash){
       if (!urgent){
         flash.style.opacity = '0';
@@ -5325,11 +5411,20 @@
       });
     }
 
+    document.getElementById('btnStatsToggle').addEventListener('click', function(){
+      statsPeek = !statsPeek;
+      applyStatsVisibility(!!(activeRoadId || activeLotId || activeParkingId));
+    });
     document.getElementById('btnDayEnd').addEventListener('click', function(){
       // "회사 복귀" 버튼이 없어진 대신, 진행 중인 트립이 있으면 리포트를 만들기 전에 여기서
       // 자동으로 트립을 종료해준다(예전에 회사 복귀를 눌러야 했던 것과 같은 효과).
       if (activeTripLog()) endTripReturned(true);
       AppMap.openDayEndKmModal();
+    });
+    document.getElementById('gpsStatusBtn').addEventListener('click', function(){
+      updateGpsStatusButton();
+      var st = gpsState();
+      if (typeof showToast === 'function') showToast(st.dot + ' ' + st.tip); else alert(st.tip);
     });
     document.getElementById('syncStatusBtn').addEventListener('click', function(){
       openTeamCodeModal();
